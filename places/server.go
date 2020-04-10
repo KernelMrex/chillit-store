@@ -2,6 +2,7 @@ package places
 
 import (
 	"chillit-store/environment"
+	"chillit-store/models"
 	"context"
 	"errors"
 	"time"
@@ -11,6 +12,7 @@ type StoreServer struct {
 	Env *environment.Env
 }
 
+// TODO: tests
 func (s *StoreServer) GetPlaces(ctx context.Context, req *GetPlacesRequest) (*GetPlacesResponse, error) {
 	timeoutCtx, _ := context.WithTimeout(ctx, 1*time.Second)
 	dbPlaces, err := s.Env.DB.GetPlacesById(timeoutCtx, req.Offset, req.Amount)
@@ -33,7 +35,20 @@ func (s *StoreServer) GetPlaces(ctx context.Context, req *GetPlacesRequest) (*Ge
 	}, nil
 }
 
-// TODO
+// TODO: Tests
 func (s *StoreServer) AddPlace(ctx context.Context, req *AddPlaceRequest) (*AddPlaceResponse, error) {
-	return &AddPlaceResponse{}, nil
+	timeoutCtx, _ := context.WithTimeout(ctx, 1*time.Second)
+	insertedId, err := s.Env.DB.AddPlace(timeoutCtx, &models.Place{
+		Id:          req.Place.Id,
+		Title:       req.Place.Title,
+		Address:     req.Place.Address,
+		Description: req.Place.Description,
+	})
+	if err != nil {
+		return &AddPlaceResponse{}, errors.New("error requesting data from database: " + err.Error())
+	}
+
+	return &AddPlaceResponse{
+		Id: insertedId,
+	}, nil
 }

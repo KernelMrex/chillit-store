@@ -27,10 +27,7 @@ message AddPlaceRequest {
 }
 
 message AddPlaceResponse {
-    oneof result {
-        string error = 1;
-        uint64 id = 2;
-    }
+    uint64 id = 1;
 }
 
 

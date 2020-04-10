@@ -15,7 +15,7 @@ type Place struct {
 
 const placesMaxLimit = 20
 
-func (db *MysqlDB) GetPlacesById(ctx context.Context, offset uint64, limit uint64) ([]Place, error) {
+func (db *MysqlDB) GetPlacesById(ctx context.Context, offset uint64, limit uint64) ([]*Place, error) {
 	// Creating query
 	if placesMaxLimit <= limit || limit <= 0 {
 		return nil, errors.New(fmt.Sprintf("[ GetPlacesById ] bad range; must be [%d..%d]", 1, limit))
@@ -30,9 +30,9 @@ func (db *MysqlDB) GetPlacesById(ctx context.Context, offset uint64, limit uint6
 	}
 
 	// Parsing results
-	places := make([]Place, 0)
+	places := make([]*Place, 0)
 	for rows.Next() {
-		var place Place
+		place := &Place{}
 		if err := rows.Scan(&place.Id, &place.Title, &place.Address, &place.Description); err != nil {
 			return nil, errors.New("[ GetPlacesById ] could not parse query")
 		}
@@ -40,4 +40,25 @@ func (db *MysqlDB) GetPlacesById(ctx context.Context, offset uint64, limit uint6
 	}
 
 	return places, nil
+}
+
+func (db *MysqlDB) AddPlace(ctx context.Context, place *Place) (uint64, error) {
+	// Creating query
+	res, err := db.ExecContext(
+		ctx,
+		"INSERT INTO place(title, address, description) VALUES (?, ?, ?)",
+		place.Title,
+		place.Address,
+		place.Description,
+	)
+	if err != nil {
+		return 0, errors.New("[ AddPlace ] error query execution: " + err.Error())
+	}
+
+	insertedId, err := res.LastInsertId()
+	if err != nil {
+		return 0, errors.New("[ AddPlace ] error query execution: " + err.Error())
+	}
+
+	return uint64(insertedId), nil
 }
