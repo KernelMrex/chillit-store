@@ -4,7 +4,11 @@
 
 Service for uploading public places data. Will be a part of chillit web-app. 
 
-### Config
+### Using
+
+Compile `go build` and run `./chillit-store [-config_path=<path>]`
+
+### Configuration
 
 Add file `config.yaml` to working directory.
  
