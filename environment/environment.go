@@ -21,8 +21,8 @@ func BuildEnv(conf *configuration.Configuration) (*Env, error) {
 	}
 
 	return &Env{
-		InfoLogger:  log.New(os.Stdout, "I :", 0),
-		ErrorLogger: log.New(os.Stderr, "E :", 0),
+		InfoLogger:  log.New(os.Stdout, "INFO: ", 0),
+		ErrorLogger: log.New(os.Stderr, "ERROR:", 0),
 		DB: dbConn,
 	}, nil
 }

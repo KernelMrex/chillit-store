@@ -1,0 +1,36 @@
+syntax = "proto3";
+
+service PlacesStore {
+    rpc GetPlaces (GetPlacesRequest) returns (GetPlacesResponse);
+    rpc AddPlace (AddPlaceRequest) returns (AddPlaceResponse);
+}
+
+message Place {
+    uint64 id = 1;
+    string title = 2;
+    string address = 3;
+    string description = 4;
+}
+
+message GetPlacesRequest {
+    uint64 offset = 1;
+    uint64 amount = 2;
+    bool shortDescription = 3;
+}
+
+message GetPlacesResponse {
+    repeated Place places = 1;
+}
+
+message AddPlaceRequest {
+    Place place = 1;
+}
+
+message AddPlaceResponse {
+    oneof result {
+        string error = 1;
+        uint64 id = 2;
+    }
+}
+
+
