@@ -23,7 +23,7 @@ func init() {
 
 	// Getting config path from flag
 	var confPath string
-	flag.StringVar(&confPath,"config_path", "config.yaml", "path for '.yaml' configuration file")
+	flag.StringVar(&confPath, "config_path", "config.yaml", "path for '.yaml' configuration file")
 	flag.Parse()
 
 	// Build config and env
@@ -47,8 +47,10 @@ func main() {
 		Env.ErrorLogger.Fatalln("[ main ] could not start listen:", err)
 	}
 	storeServer := grpc.NewServer()
-	places.RegisterPlacesStoreServer(storeServer, &PlacesStoreServer{})
-	go func () {
+	places.RegisterPlacesStoreServer(storeServer, &places.StoreServer{
+		Env: Env,
+	})
+	go func() {
 		if err := storeServer.Serve(listener); err != nil {
 			Env.ErrorLogger.Fatalln("[ main ] error while serving 'PlacesStoreServer':", err)
 		}

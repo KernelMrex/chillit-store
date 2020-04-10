@@ -1,6 +1,7 @@
 package models
 
 import (
+	"context"
 	"errors"
 	"fmt"
 )
@@ -14,12 +15,12 @@ type Place struct {
 
 const placesMaxLimit = 20
 
-func (db *MysqlDB) GetPlacesById(offset uint64, limit uint16) ([]Place, error) {
+func (db *MysqlDB) GetPlacesById(ctx context.Context, offset uint64, limit uint64) ([]Place, error) {
 	// Creating query
 	if placesMaxLimit <= limit || limit <= 0 {
 		return nil, errors.New(fmt.Sprintf("[ GetPlacesById ] bad range; must be [%d..%d]", 1, limit))
 	}
-	rows, err := db.Query(
+	rows, err := db.QueryContext(ctx,
 		"SELECT 'id', 'title', 'address', 'description' FROM 'place' LIMIT ? OFFSET ?",
 		limit,
 		offset,

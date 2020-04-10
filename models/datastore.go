@@ -1,5 +1,7 @@
 package models
 
+import "context"
+
 type Datastore interface {
-	GetPlacesById(offset uint64, limit uint16) ([]Place, error)
+	GetPlacesById(ctx context.Context, offset uint64, limit uint64) ([]Place, error)
 }
