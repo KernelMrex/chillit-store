@@ -26,7 +26,7 @@ func (db *MysqlDB) GetPlacesById(ctx context.Context, offset uint64, limit uint6
 		offset,
 	)
 	if err != nil {
-		return nil, errors.New("[ GetPlacesById ] could not execute query")
+		return nil, errors.New("[ GetPlacesById ] could not execute query " + err.Error())
 	}
 
 	// Parsing results
