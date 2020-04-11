@@ -42,23 +42,37 @@ func init() {
 }
 
 func main() {
+	Env.InfoLogger.Println("[ main ]", "Starting store service is now running!")
+
+	storeServer := NewStoreServer(Env)
+	Env.InfoLogger.Println("[ main ]", "Store service is now running!")
+
+	WaitForTermSig()
+	Env.InfoLogger.Println("[ main ]", "Store service is now shutting down...")
+
+	storeServer.Stop()
+	Env.InfoLogger.Println("[ main ]", "Store service stopped")
+}
+
+func NewStoreServer(env *environment.Env) *grpc.Server {
 	listener, err := net.Listen("tcp", ":1234")
 	if err != nil {
-		Env.ErrorLogger.Fatalln("[ main ] could not start listen:", err)
+		env.ErrorLogger.Fatalln("[ main ] could not start listen:", err)
 	}
 	storeServer := grpc.NewServer()
 	places.RegisterPlacesStoreServer(storeServer, &places.StoreServer{
-		Env: Env,
+		Env: env,
 	})
 	go func() {
 		if err := storeServer.Serve(listener); err != nil {
-			Env.ErrorLogger.Fatalln("[ main ] error while serving 'PlacesStoreServer':", err)
+			env.ErrorLogger.Fatalln("[ main ] error while serving 'PlacesStoreServer':", err)
 		}
 	}()
-	// Wait here until CTRL-C or other term signal is received.
-	Env.InfoLogger.Println("[ main ]", "Store service is now running!")
+	return storeServer
+}
+
+func WaitForTermSig() {
 	sc := make(chan os.Signal, 1)
 	signal.Notify(sc, syscall.SIGINT, syscall.SIGTERM, os.Interrupt, os.Kill)
 	<-sc
-	Env.InfoLogger.Println("[ main ]", "Store service is now shutting down...")
 }

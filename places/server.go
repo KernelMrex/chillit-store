@@ -12,7 +12,6 @@ type StoreServer struct {
 	Env *environment.Env
 }
 
-// TODO: tests
 func (s *StoreServer) GetPlaces(ctx context.Context, req *GetPlacesRequest) (*GetPlacesResponse, error) {
 	timeoutCtx, _ := context.WithTimeout(ctx, 1*time.Second)
 	dbPlaces, err := s.Env.DB.GetPlacesById(timeoutCtx, req.Offset, req.Amount)
@@ -35,7 +34,6 @@ func (s *StoreServer) GetPlaces(ctx context.Context, req *GetPlacesRequest) (*Ge
 	}, nil
 }
 
-// TODO: Tests
 func (s *StoreServer) AddPlace(ctx context.Context, req *AddPlaceRequest) (*AddPlaceResponse, error) {
 	timeoutCtx, _ := context.WithTimeout(ctx, 1*time.Second)
 	insertedId, err := s.Env.DB.AddPlace(timeoutCtx, &models.Place{
