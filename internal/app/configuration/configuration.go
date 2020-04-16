@@ -9,10 +9,12 @@ import (
 	yaml "gopkg.in/yaml.v3"
 )
 
+// Configuration structure which provides app configuration
 type Configuration struct {
 	DB *models.Config `yaml:"database"`
 }
 
+// NewConfig parse Configuration from yaml file
 func NewConfig(path string) (*Configuration, error) {
 	f, err := os.Open(path)
 	if err != nil {
