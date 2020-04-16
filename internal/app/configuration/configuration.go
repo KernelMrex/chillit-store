@@ -1,6 +1,7 @@
 package configuration
 
 import (
+	"chillit-store/internal/app/models"
 	"errors"
 	"io/ioutil"
 	"os"
@@ -9,7 +10,7 @@ import (
 )
 
 type Configuration struct {
-	DB *DBConfig `yaml:"database"`
+	DB *models.Config `yaml:"database"`
 }
 
 func NewConfig(path string) (*Configuration, error) {
