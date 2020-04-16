@@ -1,16 +1,17 @@
 package main
 
 import (
-	"chillit-store/configuration"
-	"chillit-store/environment"
-	"chillit-store/places"
+	"chillit-store/internal/app/configuration"
+	"chillit-store/internal/app/environment"
+	"chillit-store/internal/app/places"
 	"flag"
-	"google.golang.org/grpc"
 	"log"
 	"net"
 	"os"
 	"os/signal"
 	"syscall"
+
+	"google.golang.org/grpc"
 )
 
 var Env *environment.Env
@@ -23,7 +24,7 @@ func init() {
 
 	// Getting config path from flag
 	var confPath string
-	flag.StringVar(&confPath, "config_path", "config.yaml", "path for '.yaml' configuration file")
+	flag.StringVar(&confPath, "config_path", "configs/config.yaml", "path for '.yaml' configuration file")
 	flag.Parse()
 
 	// Build config and env

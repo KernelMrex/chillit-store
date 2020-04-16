@@ -3,8 +3,9 @@ package models
 import (
 	"context"
 	"fmt"
-	"github.com/DATA-DOG/go-sqlmock"
 	"testing"
+
+	"github.com/DATA-DOG/go-sqlmock"
 )
 
 func TestShouldAddOnePlace(t *testing.T) {

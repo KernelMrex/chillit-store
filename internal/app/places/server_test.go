@@ -1,14 +1,15 @@
 package places
 
 import (
-	"chillit-store/environment"
-	"chillit-store/models"
+	"chillit-store/internal/app/environment"
+	"chillit-store/internal/app/models"
 	"context"
 	"fmt"
-	"google.golang.org/grpc"
 	"log"
 	"net"
 	"testing"
+
+	"google.golang.org/grpc"
 )
 
 const mockServerPort = 8888
