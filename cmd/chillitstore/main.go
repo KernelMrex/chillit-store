@@ -11,9 +11,6 @@ import (
 	"syscall"
 )
 
-// Conf application configuration
-var Conf *configuration.Configuration
-
 var configPath string
 
 func init() {
@@ -48,7 +45,7 @@ func main() {
 // StartPlacesStore starts places store server in separate go-routine
 func StartPlacesStore(conf *placesstore.Config, datastore models.Datastore) {
 	err := placesstore.Start(&placesstore.Config{
-		Hostname: Conf.PlacesStore.Hostname,
+		Hostname: conf.Hostname,
 	}, datastore)
 	if err != nil {
 		// TODO: send error to workflow chan
