@@ -1,8 +1,8 @@
 package places
 
 import (
-	"chillit-store/environment"
-	"chillit-store/models"
+	"chillit-store/internal/app/environment"
+	"chillit-store/internal/app/models"
 	"context"
 	"errors"
 	"time"

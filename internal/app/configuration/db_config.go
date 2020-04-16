@@ -5,9 +5,9 @@ import (
 )
 
 type DBConfig struct {
-	User     string	`yaml:"user"`
+	User     string `yaml:"user"`
 	Password string `yaml:"password"`
-	Host     string	`yaml:"host"`
+	Host     string `yaml:"host"`
 	Port     uint16 `yaml:"port"`
 	Database string `yaml:"db"`
 }

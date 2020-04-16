@@ -1,8 +1,8 @@
 package environment
 
 import (
-	"chillit-store/configuration"
-	"chillit-store/models"
+	"chillit-store/internal/app/configuration"
+	"chillit-store/internal/app/models"
 	"errors"
 	"log"
 	"os"

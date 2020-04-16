@@ -2,9 +2,10 @@ package configuration
 
 import (
 	"errors"
-	yaml "gopkg.in/yaml.v3"
 	"io/ioutil"
 	"os"
+
+	yaml "gopkg.in/yaml.v3"
 )
 
 type Configuration struct {
