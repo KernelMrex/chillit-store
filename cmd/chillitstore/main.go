@@ -2,7 +2,7 @@ package main
 
 import (
 	"chillit-store/internal/app/configuration"
-	"chillit-store/internal/app/environment"
+	"chillit-store/internal/app/models"
 	"chillit-store/internal/app/placesstore"
 	"flag"
 	"log"
@@ -11,52 +11,49 @@ import (
 	"syscall"
 )
 
-var Env *environment.Env
+// Conf application configuration
+var Conf *configuration.Configuration
+
+var configPath string
 
 func init() {
-	// Logger initialization
-	initInfoLogger := log.New(os.Stdout, "Init info: ", 0)
-	initErrorLogger := log.New(os.Stderr, "Init error: ", 0)
-	initInfoLogger.Println("Initialization started...")
-
-	// Getting config path from flag
-	var confPath string
-	flag.StringVar(&confPath, "config_path", "configs/config.yaml", "path for '.yaml' configuration file")
-	flag.Parse()
-
-	// Build config and env
-	conf, err := configuration.NewConfig(confPath)
-	if err != nil {
-		initErrorLogger.Fatalln(err)
-	}
-	initInfoLogger.Println("Configuration has loaded")
-
-	Env, err = environment.BuildEnv(conf)
-	if err != nil {
-		initErrorLogger.Fatalln(err)
-	}
-	initInfoLogger.Println("Environment has built")
-	initInfoLogger.Println("Initialization successful")
+	flag.StringVar(&configPath, "config_path", "configs/config.yaml", "path for '.yaml' configuration file")
 }
 
 func main() {
-	Env.InfoLogger.Println("[ main ]", "Starting store service is now running!")
+	flag.Parse()
 
-	go func() {
-		err := placesstore.Start(&placesstore.Config{
-			Hostname: ":10100",
-		}, Env.DB)
-		if err != nil {
-			// TODO: send error to workflow chan
-			Env.ErrorLogger.Fatalln("[ main ]", err)
-		}
-	}()
-	Env.InfoLogger.Println("[ main ]", "Store service is now running!")
+	log.Println("[ main ]", "Starting store service")
+
+	// Parsing config
+	conf, err := configuration.NewConfig(configPath)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	// Connecting to datastore
+	datastore, err := models.NewMysqlDB(conf.DB.GetUrl())
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	// Starting PlacesStore service
+	go StartPlacesStore(conf.PlacesStore, datastore)
+	log.Println("[ main ]", "Store service is now running!")
 
 	WaitForTermSig()
-	Env.InfoLogger.Println("[ main ]", "Store service is now shutting down...")
+	log.Println("[ main ]", "Store service stopped")
+}
 
-	Env.InfoLogger.Println("[ main ]", "Store service stopped")
+// StartPlacesStore starts places store server in separate go-routine
+func StartPlacesStore(conf *placesstore.Config, datastore models.Datastore) {
+	err := placesstore.Start(&placesstore.Config{
+		Hostname: Conf.PlacesStore.Hostname,
+	}, datastore)
+	if err != nil {
+		// TODO: send error to workflow chan
+		log.Fatalln("[ main ]", err)
+	}
 }
 
 // WaitForTermSig waits for termination signal from os
