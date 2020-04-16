@@ -19,4 +19,7 @@ database:
   host: "localhost"
   port: 3306
   db: "database"
+
+places_store_server:
+  hostname: ":10001"
 ``` 
