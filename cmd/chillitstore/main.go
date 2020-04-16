@@ -3,15 +3,12 @@ package main
 import (
 	"chillit-store/internal/app/configuration"
 	"chillit-store/internal/app/environment"
-	"chillit-store/internal/app/places"
+	"chillit-store/internal/app/placesstore"
 	"flag"
 	"log"
-	"net"
 	"os"
 	"os/signal"
 	"syscall"
-
-	"google.golang.org/grpc"
 )
 
 var Env *environment.Env
@@ -45,33 +42,24 @@ func init() {
 func main() {
 	Env.InfoLogger.Println("[ main ]", "Starting store service is now running!")
 
-	storeServer := NewStoreServer(Env)
+	go func() {
+		err := placesstore.Start(&placesstore.Config{
+			Hostname: ":10100",
+		}, Env.DB)
+		if err != nil {
+			// TODO: send error to workflow chan
+			Env.ErrorLogger.Fatalln("[ main ]", err)
+		}
+	}()
 	Env.InfoLogger.Println("[ main ]", "Store service is now running!")
 
 	WaitForTermSig()
 	Env.InfoLogger.Println("[ main ]", "Store service is now shutting down...")
 
-	storeServer.Stop()
 	Env.InfoLogger.Println("[ main ]", "Store service stopped")
 }
 
-func NewStoreServer(env *environment.Env) *grpc.Server {
-	listener, err := net.Listen("tcp", ":1234")
-	if err != nil {
-		env.ErrorLogger.Fatalln("[ main ] could not start listen:", err)
-	}
-	storeServer := grpc.NewServer()
-	places.RegisterPlacesStoreServer(storeServer, &places.StoreServer{
-		Env: env,
-	})
-	go func() {
-		if err := storeServer.Serve(listener); err != nil {
-			env.ErrorLogger.Fatalln("[ main ] error while serving 'PlacesStoreServer':", err)
-		}
-	}()
-	return storeServer
-}
-
+// WaitForTermSig waits for termination signal from os
 func WaitForTermSig() {
 	sc := make(chan os.Signal, 1)
 	signal.Notify(sc, syscall.SIGINT, syscall.SIGTERM, os.Interrupt, os.Kill)

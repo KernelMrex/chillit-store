@@ -2,6 +2,7 @@ package configuration
 
 import (
 	"chillit-store/internal/app/models"
+	"chillit-store/internal/app/placesstore"
 	"errors"
 	"io/ioutil"
 	"os"
@@ -11,7 +12,8 @@ import (
 
 // Configuration structure which provides app configuration
 type Configuration struct {
-	DB *models.Config `yaml:"database"`
+	DB          *models.Config      `yaml:"database"`
+	PlacesStore *placesstore.Config `yaml:"places_store_server"`
 }
 
 // NewConfig parse Configuration from yaml file
