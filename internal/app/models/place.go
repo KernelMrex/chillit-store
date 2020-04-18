@@ -21,7 +21,7 @@ func (db *MysqlDB) GetPlacesById(ctx context.Context, offset uint64, limit uint6
 		return nil, errors.New(fmt.Sprintf("[ GetPlacesById ] bad range; must be [%d..%d]", 1, placesMaxLimit))
 	}
 	rows, err := db.QueryContext(ctx,
-		"SELECT 'id', 'title', 'address', 'description' FROM 'place' LIMIT ? OFFSET ?",
+		"SELECT `id`, `title`, `address`, `description` FROM `place` LIMIT ? OFFSET ?",
 		limit,
 		offset,
 	)
