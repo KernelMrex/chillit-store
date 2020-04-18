@@ -26,7 +26,8 @@ func (s *storeServer) GetPlaces(ctx context.Context, req *places.GetPlacesReques
 	timeoutCtx, _ := context.WithTimeout(ctx, 1*time.Second)
 	dbPlaces, err := s.datastore.GetPlacesById(timeoutCtx, req.Offset, req.Amount)
 	if err != nil {
-		return &places.GetPlacesResponse{}, errors.New("error requesting data from database: " + err.Error())
+		s.logger.Errorf("[ GetPlaces ] error requesting data from database: " + err.Error())
+		return &places.GetPlacesResponse{}, errors.New("error requesting data from database")
 	}
 
 	pbPlaces := make([]*places.Place, len(dbPlaces))
@@ -53,7 +54,8 @@ func (s *storeServer) AddPlace(ctx context.Context, req *places.AddPlaceRequest)
 		Description: req.Place.Description,
 	})
 	if err != nil {
-		return &places.AddPlaceResponse{}, errors.New("error requesting data from database: " + err.Error())
+		s.logger.Errorf("[ AddPlace ] error inserting data into database: " + err.Error())
+		return &places.AddPlaceResponse{}, errors.New("error inserting data into database")
 	}
 	return &places.AddPlaceResponse{
 		Id: insertedID,
