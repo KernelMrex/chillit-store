@@ -1,7 +1,8 @@
 syntax = "proto3";
 
 service PlacesStore {
-    rpc GetPlaces (GetPlacesRequest) returns (GetPlacesResponse);
+    rpc GetRandomPlaceByCityName (GetRandomPlaceByCityNameRequest) returns (GetRandomPlaceByCityNameResponse);
+    rpc GetCities (GetCitiesRequest) returns (GetCitiesResponse);
     rpc AddPlace (AddPlaceRequest) returns (AddPlaceResponse);
 }
 
@@ -12,22 +13,36 @@ message Place {
     string description = 4;
 }
 
-message GetPlacesRequest {
-    uint64 offset = 1;
-    uint64 amount = 2;
-    bool shortDescription = 3;
+message City {
+    uint64 id = 1;
+    string title = 2;
 }
 
-message GetPlacesResponse {
-    repeated Place places = 1;
-}
-
+// AddPlace
 message AddPlaceRequest {
-    Place place = 1;
+    string cityName = 1;
+    Place place = 2;
 }
 
 message AddPlaceResponse {
     uint64 id = 1;
 }
 
+// GetCities
+message GetCitiesRequest {
+    uint64 amount = 1;
+    uint64 offset = 2;
+}
 
+message GetCitiesResponse {
+    repeated City cities = 1;
+}
+
+// GetRandomPlaceByCityName
+message GetRandomPlaceByCityNameRequest {
+    string cityName = 1;
+}
+
+message GetRandomPlaceByCityNameResponse {
+    Place place = 1;
+}

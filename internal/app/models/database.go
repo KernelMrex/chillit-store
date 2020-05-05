@@ -4,13 +4,15 @@ import (
 	"database/sql"
 	"errors"
 
-	_ "github.com/go-sql-driver/mysql"
+	_ "github.com/go-sql-driver/mysql" // imported for mysql side effects
 )
 
+// MysqlDB provides MySQL implementation for datastore
 type MysqlDB struct {
 	*sql.DB
 }
 
+// NewMysqlDB build MysqlDB struct and initialize it
 func NewMysqlDB(url string) (*MysqlDB, error) {
 	db, err := sql.Open("mysql", url)
 	if err != nil {
