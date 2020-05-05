@@ -26,7 +26,20 @@ func (s *storeServer) AddPlace(ctx context.Context, req *places.AddPlaceRequest)
 }
 
 func (s *storeServer) GetRandomPlaceByCityName(ctx context.Context, req *places.GetRandomPlaceByCityNameRequest) (*places.GetRandomPlaceByCityNameResponse, error) {
-	return &places.GetRandomPlaceByCityNameResponse{}, fmt.Errorf("not implemented yet")
+	dbPlaceModel, err := s.datastore.GetRandomPlaceByCityName(ctx, req.CityName)
+	if err != nil {
+		s.logger.Errorf("could not request datastore for city '%s' error: %v", req.CityName, err)
+		return &places.GetRandomPlaceByCityNameResponse{}, fmt.Errorf("error while requesting datastore")
+	}
+
+	return &places.GetRandomPlaceByCityNameResponse{
+		Place: &places.Place{
+			Id:          dbPlaceModel.ID,
+			Title:       dbPlaceModel.Title,
+			Description: dbPlaceModel.Description,
+			Address:     dbPlaceModel.Address,
+		},
+	}, nil
 }
 
 func (s *storeServer) GetCities(ctx context.Context, req *places.GetCitiesRequest) (*places.GetCitiesResponse, error) {

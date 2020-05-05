@@ -29,7 +29,7 @@ func main() {
 	}
 
 	// Connecting to datastore
-	datastore, err := models.NewMysqlDB(conf.DB.GetUrl())
+	datastore, err := models.NewMysqlDB(conf.DB.GetURL())
 	if err != nil {
 		log.Fatalln(err)
 	}
