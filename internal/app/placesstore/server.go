@@ -5,6 +5,7 @@ import (
 	"chillit-store/internal/app/places"
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/sirupsen/logrus"
 )
@@ -26,7 +27,8 @@ func (s *storeServer) AddPlace(ctx context.Context, req *places.AddPlaceRequest)
 }
 
 func (s *storeServer) GetRandomPlaceByCityName(ctx context.Context, req *places.GetRandomPlaceByCityNameRequest) (*places.GetRandomPlaceByCityNameResponse, error) {
-	dbPlaceModel, err := s.datastore.GetRandomPlaceByCityName(ctx, req.CityName)
+	timeoutContext, _ := context.WithTimeout(ctx, time.Second*1)
+	dbPlaceModel, err := s.datastore.GetRandomPlaceByCityName(timeoutContext, req.CityName)
 	if err != nil {
 		s.logger.Errorf("could not request datastore for city '%s' error: %v", req.CityName, err)
 		return &places.GetRandomPlaceByCityNameResponse{}, fmt.Errorf("error while requesting datastore")
