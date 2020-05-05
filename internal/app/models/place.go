@@ -5,7 +5,7 @@ import (
 	"fmt"
 )
 
-// Place provides model for places table in database
+// Place represents place table row in database
 type Place struct {
 	ID          uint64
 	Title       string

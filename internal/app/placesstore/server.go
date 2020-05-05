@@ -28,7 +28,7 @@ func (s *storeServer) AddPlace(ctx context.Context, req *places.AddPlaceRequest)
 
 func (s *storeServer) GetRandomPlaceByCityName(ctx context.Context, req *places.GetRandomPlaceByCityNameRequest) (*places.GetRandomPlaceByCityNameResponse, error) {
 	timeoutContext, _ := context.WithTimeout(ctx, time.Second*1)
-	dbPlaceModel, err := s.datastore.GetRandomPlaceByCityName(timeoutContext, req.CityName)
+	dbPlaceModel, err := s.datastore.GetRandomPlaceByCityName(timeoutContext, req.GetCityName())
 	if err != nil {
 		s.logger.Errorf("could not request datastore for city '%s' error: %v", req.CityName, err)
 		return &places.GetRandomPlaceByCityNameResponse{}, fmt.Errorf("error while requesting datastore")
@@ -45,5 +45,22 @@ func (s *storeServer) GetRandomPlaceByCityName(ctx context.Context, req *places.
 }
 
 func (s *storeServer) GetCities(ctx context.Context, req *places.GetCitiesRequest) (*places.GetCitiesResponse, error) {
-	return &places.GetCitiesResponse{}, fmt.Errorf("not implemented yet")
+	timeoutContext, _ := context.WithTimeout(ctx, time.Second*1)
+	dbCityModels, err := s.datastore.GetCities(timeoutContext, req.GetAmount(), req.GetOffset())
+	if err != nil {
+		s.logger.Errorf("could not request datastore for limit '%d' and offset '%d' error: %v", req.GetAmount(), req.GetOffset(), err)
+		return &places.GetCitiesResponse{}, fmt.Errorf("error while requesting datastore")
+	}
+
+	cities := make([]*places.City, len(dbCityModels))
+	for i, city := range dbCityModels {
+		cities[i] = &places.City{
+			Id:    city.ID,
+			Title: city.Title,
+		}
+	}
+
+	return &places.GetCitiesResponse{
+		Cities: cities,
+	}, nil
 }
