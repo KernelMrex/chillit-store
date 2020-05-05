@@ -4,6 +4,7 @@ import (
 	"fmt"
 )
 
+// Config configuration struct of MysqlDB
 type Config struct {
 	User     string `yaml:"user"`
 	Password string `yaml:"password"`
@@ -12,7 +13,8 @@ type Config struct {
 	Database string `yaml:"db"`
 }
 
-func (c *Config) GetUrl() string {
+// GetURL returns url for db connection
+func (c *Config) GetURL() string {
 	return fmt.Sprintf(
 		"%s:%s@tcp(%s:%d)/%s",
 		c.User,

@@ -2,7 +2,8 @@ package models
 
 import "context"
 
+// Datastore provides interface to communicate with db
 type Datastore interface {
-	GetPlacesById(ctx context.Context, offset uint64, limit uint64) ([]*Place, error)
-	AddPlace(ctx context.Context, place *Place) (uint64, error)
+	GetRandomPlaceByCityName(ctx context.Context, cityName string) (*Place, error)
+	GetCities(ctx context.Context, limit uint64, offset uint64) ([]*City, error)
 }

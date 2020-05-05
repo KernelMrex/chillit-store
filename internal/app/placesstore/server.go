@@ -4,7 +4,7 @@ import (
 	"chillit-store/internal/app/models"
 	"chillit-store/internal/app/places"
 	"context"
-	"errors"
+	"fmt"
 	"time"
 
 	"github.com/sirupsen/logrus"
@@ -22,42 +22,45 @@ func newServer(datastore models.Datastore) *storeServer {
 	}
 }
 
-func (s *storeServer) GetPlaces(ctx context.Context, req *places.GetPlacesRequest) (*places.GetPlacesResponse, error) {
-	timeoutCtx, _ := context.WithTimeout(ctx, 1*time.Second)
-	dbPlaces, err := s.datastore.GetPlacesById(timeoutCtx, req.Offset, req.Amount)
+func (s *storeServer) AddPlace(ctx context.Context, req *places.AddPlaceRequest) (*places.AddPlaceResponse, error) {
+	return &places.AddPlaceResponse{}, fmt.Errorf("not implemented yet")
+}
+
+func (s *storeServer) GetRandomPlaceByCityName(ctx context.Context, req *places.GetRandomPlaceByCityNameRequest) (*places.GetRandomPlaceByCityNameResponse, error) {
+	timeoutContext, _ := context.WithTimeout(ctx, time.Second*1)
+	dbPlaceModel, err := s.datastore.GetRandomPlaceByCityName(timeoutContext, req.GetCityName())
 	if err != nil {
-		s.logger.Errorf("[ GetPlaces ] error requesting data from database: " + err.Error())
-		return &places.GetPlacesResponse{}, errors.New("error requesting data from database")
+		s.logger.Errorf("could not request datastore for city '%s' error: %v", req.CityName, err)
+		return &places.GetRandomPlaceByCityNameResponse{}, fmt.Errorf("error while requesting datastore")
 	}
 
-	pbPlaces := make([]*places.Place, len(dbPlaces))
-	for i, place := range dbPlaces {
-		pbPlaces[i] = &places.Place{
-			Id:          place.Id,
-			Title:       place.Title,
-			Address:     place.Address,
-			Description: place.Description,
-		}
-	}
-
-	return &places.GetPlacesResponse{
-		Places: pbPlaces,
+	return &places.GetRandomPlaceByCityNameResponse{
+		Place: &places.Place{
+			Id:          dbPlaceModel.ID,
+			Title:       dbPlaceModel.Title,
+			Description: dbPlaceModel.Description,
+			Address:     dbPlaceModel.Address,
+		},
 	}, nil
 }
 
-func (s *storeServer) AddPlace(ctx context.Context, req *places.AddPlaceRequest) (*places.AddPlaceResponse, error) {
-	timeoutCtx, _ := context.WithTimeout(ctx, 1*time.Second)
-	insertedID, err := s.datastore.AddPlace(timeoutCtx, &models.Place{
-		Id:          req.Place.Id,
-		Title:       req.Place.Title,
-		Address:     req.Place.Address,
-		Description: req.Place.Description,
-	})
+func (s *storeServer) GetCities(ctx context.Context, req *places.GetCitiesRequest) (*places.GetCitiesResponse, error) {
+	timeoutContext, _ := context.WithTimeout(ctx, time.Second*1)
+	dbCityModels, err := s.datastore.GetCities(timeoutContext, req.GetAmount(), req.GetOffset())
 	if err != nil {
-		s.logger.Errorf("[ AddPlace ] error inserting data into database: " + err.Error())
-		return &places.AddPlaceResponse{}, errors.New("error inserting data into database")
+		s.logger.Errorf("could not request datastore for limit '%d' and offset '%d' error: %v", req.GetAmount(), req.GetOffset(), err)
+		return &places.GetCitiesResponse{}, fmt.Errorf("error while requesting datastore")
 	}
-	return &places.AddPlaceResponse{
-		Id: insertedID,
+
+	cities := make([]*places.City, len(dbCityModels))
+	for i, city := range dbCityModels {
+		cities[i] = &places.City{
+			Id:    city.ID,
+			Title: city.Title,
+		}
+	}
+
+	return &places.GetCitiesResponse{
+		Cities: cities,
 	}, nil
 }
