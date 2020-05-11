@@ -22,10 +22,6 @@ func newServer(datastore models.Datastore) *storeServer {
 	}
 }
 
-func (s *storeServer) AddPlace(ctx context.Context, req *places.AddPlaceRequest) (*places.AddPlaceResponse, error) {
-	return &places.AddPlaceResponse{}, fmt.Errorf("not implemented yet")
-}
-
 func (s *storeServer) GetRandomPlaceByCityName(ctx context.Context, req *places.GetRandomPlaceByCityNameRequest) (*places.GetRandomPlaceByCityNameResponse, error) {
 	timeoutContext, _ := context.WithTimeout(ctx, time.Second*1)
 	dbPlaceModel, err := s.datastore.GetRandomPlaceByCityName(timeoutContext, req.GetCityName())
@@ -63,4 +59,18 @@ func (s *storeServer) GetCities(ctx context.Context, req *places.GetCitiesReques
 	return &places.GetCitiesResponse{
 		Cities: cities,
 	}, nil
+}
+
+func (s *storeServer) AddPlace(ctx context.Context, req *places.AddPlaceRequest) (*places.AddPlaceResponse, error) {
+	timeoutContext, _ := context.WithTimeout(ctx, time.Second*1)
+	id, err := s.datastore.SavePlace(timeoutContext, &models.Place{
+		Title:       req.GetPlace().GetTitle(),
+		Address:     req.GetPlace().GetAddress(),
+		Description: req.GetPlace().GetDescription(),
+	}, req.CityName)
+	if err != nil {
+		s.logger.Errorf("could not save place '%s' error while requesting datastore: %v", req.Place.Title, err)
+		return &places.AddPlaceResponse{}, fmt.Errorf("error while requesting datastore")
+	}
+	return &places.AddPlaceResponse{Id: id}, nil
 }

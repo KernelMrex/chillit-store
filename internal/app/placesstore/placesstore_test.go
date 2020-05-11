@@ -4,6 +4,7 @@ import (
 	"chillit-store/internal/app/models"
 	"chillit-store/internal/app/places"
 	"context"
+	"fmt"
 	"testing"
 	"time"
 
@@ -204,6 +205,105 @@ func TestServer_GetCities_Timeout(t *testing.T) {
 		Offset: 0,
 	}); err == nil {
 		t.Fatalf("an error 'timeout' was expected, but not given")
+	}
+
+	// Checking expectations
+	if err := mockAPI.ExpectationsWereMet(); err != nil {
+		t.Fatalf("there were unfulfilled expectations: '%v'", err)
+	}
+}
+
+func TestServer_SavePlace_Success(t *testing.T) {
+	// Creating mock datastore
+	mockDBConn, mockAPI, err := sqlmock.New()
+	if err != nil {
+		t.Fatalf("an error '%v' happend when opening a stub database connection", err)
+	}
+	defer mockDBConn.Close()
+	mockDatastore := models.NewMockDatastore(mockDBConn)
+
+	mockAPI.ExpectExec("INSERT").
+		WithArgs("Камелот", "Ул. Пушкина 6", "Описание описание описание", "Казань").
+		WillReturnResult(sqlmock.NewResult(1, 1))
+
+	// Creating mock server
+	server := newServer(mockDatastore)
+	resp, err := server.AddPlace(context.Background(), &places.AddPlaceRequest{
+		CityName: "Казань",
+		Place: &places.Place{
+			Title:       "Камелот",
+			Address:     "Ул. Пушкина 6",
+			Description: "Описание описание описание",
+		},
+	})
+	if err != nil {
+		t.Fatalf("an error '%v' was not expected", err)
+	}
+
+	assert.Equal(t, uint64(1), resp.GetId(), "last inserted id must be 1")
+
+	// Checking expectations
+	if err := mockAPI.ExpectationsWereMet(); err != nil {
+		t.Fatalf("there were unfulfilled expectations: '%v'", err)
+	}
+}
+
+func TestServer_SavePlace_Duplicate(t *testing.T) {
+	// Creating mock datastore
+	mockDBConn, mockAPI, err := sqlmock.New()
+	if err != nil {
+		t.Fatalf("an error '%v' happend when opening a stub database connection", err)
+	}
+	defer mockDBConn.Close()
+	mockDatastore := models.NewMockDatastore(mockDBConn)
+
+	mockAPI.ExpectExec("INSERT").
+		WithArgs("Камелот", "Ул. Пушкина 6", "Описание описание описание", "Казань").
+		WillReturnError(fmt.Errorf("duplicate mock error"))
+
+	// Creating mock server
+	server := newServer(mockDatastore)
+	if _, err := server.AddPlace(context.Background(), &places.AddPlaceRequest{
+		CityName: "Казань",
+		Place: &places.Place{
+			Title:       "Камелот",
+			Address:     "Ул. Пушкина 6",
+			Description: "Описание описание описание",
+		},
+	}); err == nil {
+		t.Fatalf("an error 'duplicate mock error' was expected, but nil given")
+	}
+
+	// Checking expectations
+	if err := mockAPI.ExpectationsWereMet(); err != nil {
+		t.Fatalf("there were unfulfilled expectations: '%v'", err)
+	}
+}
+
+func TestServer_SavePlace_Timeout(t *testing.T) {
+	// Creating mock datastore
+	mockDBConn, mockAPI, err := sqlmock.New()
+	if err != nil {
+		t.Fatalf("an error '%v' happend when opening a stub database connection", err)
+	}
+	defer mockDBConn.Close()
+	mockDatastore := models.NewMockDatastore(mockDBConn)
+
+	mockAPI.ExpectExec("INSERT").
+		WithArgs("Камелот", "Ул. Пушкина 6", "Описание описание описание", "Казань").
+		WillDelayFor(time.Second * 5)
+
+	// Creating mock server
+	server := newServer(mockDatastore)
+	if _, err := server.AddPlace(context.Background(), &places.AddPlaceRequest{
+		CityName: "Казань",
+		Place: &places.Place{
+			Title:       "Камелот",
+			Address:     "Ул. Пушкина 6",
+			Description: "Описание описание описание",
+		},
+	}); err == nil {
+		t.Fatalf("an error 'timeout exceeded' was expected, but nil given")
 	}
 
 	// Checking expectations
