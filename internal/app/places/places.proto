@@ -4,6 +4,7 @@ service PlacesStore {
     rpc GetRandomPlaceByCityName (GetRandomPlaceByCityNameRequest) returns (GetRandomPlaceByCityNameResponse);
     rpc GetCities (GetCitiesRequest) returns (GetCitiesResponse);
     rpc AddPlace (AddPlaceRequest) returns (AddPlaceResponse);
+    rpc GetPlacesByCityID (GetPlacesByCityIDRequest) returns (GetPlacesByCityIDResponse);
 }
 
 message Place {
@@ -45,4 +46,15 @@ message GetRandomPlaceByCityNameRequest {
 
 message GetRandomPlaceByCityNameResponse {
     Place place = 1;
+}
+
+// GetPlacesByCityId
+message GetPlacesByCityIDRequest {
+    uint64 cityID = 1;
+    uint64 offset = 2;
+    uint64 amount = 3;
+}
+
+message GetPlacesByCityIDResponse {
+    repeated Place places = 1;
 }

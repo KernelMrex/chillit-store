@@ -74,3 +74,26 @@ func (s *storeServer) AddPlace(ctx context.Context, req *places.AddPlaceRequest)
 	}
 	return &places.AddPlaceResponse{Id: id}, nil
 }
+
+func (s *storeServer) GetPlacesByCityID(ctx context.Context, req *places.GetPlacesByCityIDRequest) (*places.GetPlacesByCityIDResponse, error) {
+	timeoutContext, _ := context.WithTimeout(ctx, time.Second*1)
+	placesModels, err := s.datastore.GetPlacesByCityID(timeoutContext, req.GetCityID(), req.Amount, req.Offset)
+	if err != nil {
+		s.logger.Errorf("could not get placesModels from datastore error: %v", err)
+		return &places.GetPlacesByCityIDResponse{}, fmt.Errorf("error while requesting datastore")
+	}
+
+	grpcPlaces := make([]*places.Place, len(placesModels))
+	for i, placeModel := range placesModels {
+		grpcPlaces[i] = &places.Place{
+			Id:          placeModel.ID,
+			Title:       placeModel.Title,
+			Address:     placeModel.Address,
+			Description: placeModel.Description,
+		}
+	}
+
+	return &places.GetPlacesByCityIDResponse{
+		Places: grpcPlaces,
+	}, nil
+}

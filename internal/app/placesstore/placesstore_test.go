@@ -311,3 +311,85 @@ func TestServer_SavePlace_Timeout(t *testing.T) {
 		t.Fatalf("there were unfulfilled expectations: '%v'", err)
 	}
 }
+
+func TestServer_GetPlacesByCityID_Success(t *testing.T) {
+	// Creating mock datastore
+	mockDBConn, mockAPI, err := sqlmock.New()
+	if err != nil {
+		t.Fatalf("an error '%v' happend when opening a stub database connection", err)
+	}
+	defer mockDBConn.Close()
+	mockDatastore := models.NewMockDatastore(mockDBConn)
+
+	mockAPI.ExpectQuery("SELECT").
+		WithArgs(2, 5, 0).
+		WillReturnRows(
+			sqlmock.NewRows([]string{"id", "title", "address", "description"}).
+				AddRow(1, "Title1", "Address1", "Description1").
+				AddRow(2, "Title2", "Address2", "Description2").
+				AddRow(3, "Title3", "Address3", "Description3"),
+		)
+
+	// Creating mock server
+	server := newServer(mockDatastore)
+	resp, err := server.GetPlacesByCityID(context.Background(), &places.GetPlacesByCityIDRequest{
+		CityID: 2,
+		Amount: 5,
+		Offset: 0,
+	})
+	if err != nil {
+		t.Fatalf("error was not expected: %v", err)
+	}
+
+	// Checking results of request
+	assert.Equal(t, 3, len(resp.GetPlaces()), "amount of places should be 3")
+
+	assert.Equal(t, uint64(1), resp.GetPlaces()[0].GetId())
+	assert.Equal(t, "Title1", resp.GetPlaces()[0].GetTitle())
+	assert.Equal(t, "Address1", resp.GetPlaces()[0].GetAddress())
+	assert.Equal(t, "Description1", resp.GetPlaces()[0].GetDescription())
+
+	assert.Equal(t, uint64(2), resp.GetPlaces()[1].GetId())
+	assert.Equal(t, "Title2", resp.GetPlaces()[1].GetTitle())
+	assert.Equal(t, "Address2", resp.GetPlaces()[1].GetAddress())
+	assert.Equal(t, "Description2", resp.GetPlaces()[1].GetDescription())
+
+	assert.Equal(t, uint64(3), resp.GetPlaces()[2].GetId())
+	assert.Equal(t, "Title3", resp.GetPlaces()[2].GetTitle())
+	assert.Equal(t, "Address3", resp.GetPlaces()[2].GetAddress())
+	assert.Equal(t, "Description3", resp.GetPlaces()[2].GetDescription())
+
+	// Checking expectations
+	if err := mockAPI.ExpectationsWereMet(); err != nil {
+		t.Fatalf("there were unfulfilled expectations: '%v'", err)
+	}
+}
+
+func TestServer_GetPlacesByCityID_Timeout(t *testing.T) {
+	// Creating mock datastore
+	mockDBConn, mockAPI, err := sqlmock.New()
+	if err != nil {
+		t.Fatalf("an error '%v' happend when opening a stub database connection", err)
+	}
+	defer mockDBConn.Close()
+	mockDatastore := models.NewMockDatastore(mockDBConn)
+
+	mockAPI.ExpectQuery("SELECT").
+		WithArgs(2, 5, 0).
+		WillDelayFor(time.Second * 5)
+
+	// Creating mock server
+	server := newServer(mockDatastore)
+	if _, err := server.GetPlacesByCityID(context.Background(), &places.GetPlacesByCityIDRequest{
+		CityID: 2,
+		Amount: 5,
+		Offset: 0,
+	}); err == nil {
+		t.Fatalf("error 'timeout' was expected, but nil given")
+	}
+
+	// Checking expectations
+	if err := mockAPI.ExpectationsWereMet(); err != nil {
+		t.Fatalf("there were unfulfilled expectations: '%v'", err)
+	}
+}
