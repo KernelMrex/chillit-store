@@ -12,6 +12,7 @@ message Place {
     string title = 2;
     string address = 3;
     string description = 4;
+    string imgURL = 5;
 }
 
 message City {

@@ -11,12 +11,14 @@ type Place struct {
 	Title       string
 	Address     string
 	Description string
+	ImageURL    string
 }
 
 const (
 	sqlQueryForGetRandomPlaceByCityName = "SELECT p.`id`, p.`title`, p.`address`, p.`description` FROM `place` as p, `city` as c WHERE c.`id` = p.`city_id` AND c.`title` = ? ORDER BY RAND() LIMIT 1"
-	sqlQueryForSavePlace                = "INSERT INTO place (`title`, `address`, `description`, `city_id`) SELECT '?', '?', '?', `id` FROM `city` AS c WHERE `title`='?'"
-	sqlQueryForGetPlacesByCityID        = "SELECT `id`, `title`, `address`, `description` FROM `place` WHERE `city_id`=? LIMIT ? OFFSET ?"
+	sqlQueryForSavePlace                = "INSERT INTO place (`title`, `address`, `description`, `city_id`, `image_url`) SELECT ?, ?, ?, `c`.`id`, ? FROM `city` AS `c` WHERE `title`=?"
+	sqlQueryForSavePlaceCityInsert      = "INSERT INTO `city` (`title`) VALUES (?) ON DUPLICATE KEY UPDATE id=LAST_INSERT_ID(id), `title`=?"
+	sqlQueryForGetPlacesByCityID        = "SELECT `id`, `title`, `address`, `description`, `image_url` FROM `place` WHERE `city_id`=? LIMIT ? OFFSET ?"
 )
 
 // GetRandomPlaceByCityName returns random place from datastore
@@ -35,10 +37,17 @@ func (db *MysqlDB) GetRandomPlaceByCityName(ctx context.Context, cityName string
 
 // SavePlace stores place info in database return last inserted id
 func (db *MysqlDB) SavePlace(ctx context.Context, place *Place, cityName string) (uint64, error) {
+	// Checking if there city with the same name if not exists then inserting
+	_, err := db.ExecContext(ctx, sqlQueryForSavePlaceCityInsert, cityName, cityName)
+	if err != nil {
+		return 0, fmt.Errorf("could not get city id for this title, error: %v", err)
+	}
+
 	res, err := db.ExecContext(ctx, sqlQueryForSavePlace,
 		place.Title,
 		place.Address,
 		place.Description,
+		place.ImageURL,
 		cityName,
 	)
 	if err != nil {
@@ -64,7 +73,7 @@ func (db *MysqlDB) GetPlacesByCityID(ctx context.Context, cityID uint64, amount 
 	places := make([]*Place, 0)
 	for resp.Next() {
 		place := &Place{}
-		if err := resp.Scan(&place.ID, &place.Title, &place.Address, &place.Description); err != nil {
+		if err := resp.Scan(&place.ID, &place.Title, &place.Address, &place.Description, &place.ImageURL); err != nil {
 			return nil, fmt.Errorf("could not scan places: %v", err)
 		}
 		places = append(places, place)

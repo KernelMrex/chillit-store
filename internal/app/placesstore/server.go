@@ -67,11 +67,13 @@ func (s *storeServer) AddPlace(ctx context.Context, req *places.AddPlaceRequest)
 		Title:       req.GetPlace().GetTitle(),
 		Address:     req.GetPlace().GetAddress(),
 		Description: req.GetPlace().GetDescription(),
+		ImageURL:    req.GetPlace().GetImgURL(),
 	}, req.CityName)
 	if err != nil {
 		s.logger.Errorf("could not save place '%s' error while requesting datastore: %v", req.Place.Title, err)
 		return &places.AddPlaceResponse{}, fmt.Errorf("error while requesting datastore")
 	}
+
 	return &places.AddPlaceResponse{Id: id}, nil
 }
 
@@ -90,6 +92,7 @@ func (s *storeServer) GetPlacesByCityID(ctx context.Context, req *places.GetPlac
 			Title:       placeModel.Title,
 			Address:     placeModel.Address,
 			Description: placeModel.Description,
+			ImgURL:      placeModel.ImageURL,
 		}
 	}
 

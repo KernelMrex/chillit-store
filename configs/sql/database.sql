@@ -17,6 +17,7 @@ CREATE TABLE IF NOT EXISTS `place`
     `address`     VARCHAR(64) NOT NULL,
     `city_id`     BIGINT NOT NULL,
     `description` TEXT NOT NULL,
+    `image_url`   VARCHAR(255),
     PRIMARY KEY (`id`),
     FOREIGN KEY (`city_id`) REFERENCES `city`(`id`),
     CONSTRAINT `place_info` UNIQUE(`title`, `address`, `city_id`)
